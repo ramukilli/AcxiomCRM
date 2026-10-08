@@ -1,0 +1,166 @@
+@model IEnumerable<AcxiomCRM.Models.Opportunity>
+@{
+    ViewData["Title"] = "Sales Opportunities";
+    var totalPipeline = Model.Where(o => o.Status == "Open").Sum(o => o.Amount);
+    var weightedPipeline = Model.Where(o => o.Status == "Open").Sum(o => o.Amount * o.Probability / 100m);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-success me-2"></i>Opportunities</h2>
+        <p class="text-muted small mb-0">Track active deals, probability weighting, and pipeline velocity</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary fw-semibold shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> New Opportunity
+    </a>
+</div>
+
+<!-- Pipeline Highlights Banner -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white p-3 border-start border-4 border-primary">
+            <span class="text-muted small fw-semibold text-uppercase">Total Active Pipeline</span>
+            <div class="fs-4 fw-bold font-monospace text-primary mt-1">$@totalPipeline.ToString("N2")</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white p-3 border-start border-4 border-info">
+            <span class="text-muted small fw-semibold text-uppercase">Weighted Pipeline (Probability Adj.)</span>
+            <div class="fs-4 fw-bold font-monospace text-info mt-1">$@weightedPipeline.ToString("N2")</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white p-3 border-start border-4 border-success">
+            <span class="text-muted small fw-semibold text-uppercase">Won Deals Revenue</span>
+            <div class="fs-4 fw-bold font-monospace text-success mt-1">$@Model.Where(o => o.Stage == "Won").Sum(o => o.Amount).ToString("N2")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Stage Filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" value="@ViewBag.CurrentSearch" class="form-control border-start-0" placeholder="Search opportunity name or client..." />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="stage" class="form-select">
+                    <option value="">All Pipeline Stages</option>
+                    <option value="Qualification" selected="@(ViewBag.CurrentStage == "Qualification")">Qualification</option>
+                    <option value="Proposal" selected="@(ViewBag.CurrentStage == "Proposal")">Proposal</option>
+                    <option value="Negotiation" selected="@(ViewBag.CurrentStage == "Negotiation")">Negotiation</option>
+                    <option value="Won" selected="@(ViewBag.CurrentStage == "Won")">Won</option>
+                    <option value="Lost" selected="@(ViewBag.CurrentStage == "Lost")">Lost</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Opportunities Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light text-uppercase small fw-bold text-muted">
+                <tr>
+                    <th>Opportunity Name</th>
+                    <th>Customer Account</th>
+                    <th>Deal Amount</th>
+                    <th>Stage</th>
+                    <th>Probability</th>
+                    <th>Weighted Value</th>
+                    <th>Expected Close</th>
+                    <th>Assigned Rep</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.OpportunityId" class="fw-semibold text-primary text-decoration-none">
+                                    @item.OpportunityName
+                                </a>
+                            </td>
+                            <td>
+                                @if (item.Customer != null)
+                                {
+                                    <a asp-controller="Customer" asp-action="Details" asp-route-id="@item.CustomerId" class="text-decoration-none text-dark small fw-medium">
+                                        @item.Customer.CustomerName
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">None</span>
+                                }
+                            </td>
+                            <td class="fw-bold font-monospace text-dark">
+                                $@item.Amount.ToString("N2")
+                            </td>
+                            <td>
+                                @{
+                                    string stageColor = item.Stage switch
+                                    {
+                                        "Won" => "bg-success text-white",
+                                        "Lost" => "bg-danger text-white",
+                                        "Negotiation" => "bg-warning text-dark",
+                                        "Proposal" => "bg-info text-dark",
+                                        _ => "bg-primary-subtle text-primary border"
+                                    };
+                                }
+                                <span class="badge @stageColor px-2 py-1">@item.Stage</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="small me-2">@item.Probability%</span>
+                                    <div class="progress flex-grow-1" style="height: 6px; width: 50px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: @item.Probability%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="font-monospace text-muted small">
+                                $@item.WeightedAmount.ToString("N2")
+                            </td>
+                            <td>
+                                <span class="small font-monospace text-muted">@item.ExpectedCloseDate.ToString("yyyy-MM-dd")</span>
+                            </td>
+                            <td>
+                                <span class="small text-muted"><i class="bi bi-person me-1"></i>@(item.AssignedUser?.FullName ?? item.AssignedUser?.UserName ?? "Unassigned")</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@item.OpportunityId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.OpportunityId" class="btn btn-outline-primary" title="Edit Deal">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                            No opportunities match the criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

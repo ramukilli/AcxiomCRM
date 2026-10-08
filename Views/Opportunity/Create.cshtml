@@ -1,0 +1,138 @@
+@model AcxiomCRM.Models.Opportunity
+@{
+    ViewData["Title"] = "New Sales Opportunity";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="d-flex align-items-center mb-3">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+            <h3 class="fw-bold mb-0">Create Sales Opportunity</h3>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-semibold text-success"><i class="bi bi-graph-up-arrow me-2"></i>Deal Information & Pipeline Metrics</h6>
+            </div>
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <form asp-action="Create" method="post" id="oppForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="LeadId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="OpportunityName" class="form-label small fw-semibold text-muted text-uppercase">Opportunity / Deal Name *</label>
+                            <input asp-for="OpportunityName" class="form-control" placeholder="e.g. Acme Corp Enterprise License" />
+                            <span asp-validation-for="OpportunityName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="CustomerId" class="form-label small fw-semibold text-muted text-uppercase">Customer Account *</label>
+                            <select asp-for="CustomerId" asp-items="ViewBag.CustomersList" class="form-select">
+                                <option value="">Select Customer Account</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Amount" class="form-label small fw-semibold text-muted text-uppercase">Deal Amount ($) *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">$</span>
+                                <input asp-for="Amount" id="oppAmount" class="form-control" type="number" step="0.01" min="0.01" placeholder="Greater than 0" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Probability" class="form-label small fw-semibold text-muted text-uppercase">Win Probability (%) *</label>
+                            <div class="input-group">
+                                <input asp-for="Probability" id="oppProb" class="form-control" type="number" min="0" max="100" placeholder="0 - 100" />
+                                <span class="input-group-text bg-light text-muted">%</span>
+                            </div>
+                            <span asp-validation-for="Probability" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted text-uppercase">Derived Weighted Value</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">$</span>
+                                <input type="text" id="weightedValueDisplay" class="form-control bg-light font-monospace fw-bold text-success" readonly value="0.00" />
+                            </div>
+                            <div class="form-text small">Amount &times; Probability / 100</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Stage" class="form-label small fw-semibold text-muted text-uppercase">Pipeline Stage *</label>
+                            <select asp-for="Stage" id="oppStage" class="form-select">
+                                <option value="Qualification">Qualification (10-20%)</option>
+                                <option value="Proposal">Proposal (40-60%)</option>
+                                <option value="Negotiation">Negotiation (70-90%)</option>
+                                <option value="Won">Closed Won (100%)</option>
+                                <option value="Lost">Closed Lost (0%)</option>
+                            </select>
+                            <span asp-validation-for="Stage" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="ExpectedCloseDate" class="form-label small fw-semibold text-muted text-uppercase">Expected Close Date *</label>
+                            <input asp-for="ExpectedCloseDate" id="closeDateInput" class="form-control" type="date" value="@DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd")" min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="ExpectedCloseDate" class="text-danger small"></span>
+                            <div class="form-text small">Cannot be in the past for active deals</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="AssignedTo" class="form-label small fw-semibold text-muted text-uppercase">Deal Owner / Rep</label>
+                            <select asp-for="AssignedTo" asp-items="ViewBag.UsersList" class="form-select"></select>
+                            <span asp-validation-for="AssignedTo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label small fw-semibold text-muted text-uppercase">Strategic Notes</label>
+                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Competitor landscape, key decision-makers, buying criteria..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" id="saveOpportunityBtn" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check2-circle me-1"></i> Save Opportunity
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function recalculateWeighted() {
+            var amt = parseFloat(document.getElementById('oppAmount').value) || 0;
+            var prob = parseFloat(document.getElementById('oppProb').value) || 0;
+            var weighted = (amt * prob / 100).toFixed(2);
+            document.getElementById('weightedValueDisplay').value = weighted;
+        }
+
+        document.getElementById('oppAmount')?.addEventListener('input', recalculateWeighted);
+        document.getElementById('oppProb')?.addEventListener('input', recalculateWeighted);
+        recalculateWeighted();
+
+        // Auto adjust probability on stage change
+        document.getElementById('oppStage')?.addEventListener('change', function () {
+            var stg = this.value;
+            var probInput = document.getElementById('oppProb');
+            if (stg === 'Won') probInput.value = 100;
+            else if (stg === 'Lost') probInput.value = 0;
+            else if (stg === 'Qualification') probInput.value = 20;
+            else if (stg === 'Proposal') probInput.value = 50;
+            else if (stg === 'Negotiation') probInput.value = 80;
+            recalculateWeighted();
+        });
+    </script>
+}

@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Access Restricted — AcxiomCRM";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="card border-0 shadow-sm p-5 rounded-4">
+            <div class="text-danger mb-3">
+                <i class="bi bi-shield-slash-fill" style="font-size: 4rem;"></i>
+            </div>
+            <h2 class="fw-bold text-dark">Access Denied</h2>
+            <p class="text-muted fs-6 mb-4">
+                You do not have the required role or authorization permissions to view this resource. 
+                Role-based access control (RBAC) is strictly enforced on the AcxiomCRM platform.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary px-4 py-2">
+                    <i class="bi bi-house-door me-1"></i> Return to Dashboard
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary px-4 py-2">
+                    <i class="bi bi-person-circle me-1"></i> Switch Account
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

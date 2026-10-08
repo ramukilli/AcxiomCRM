@@ -1,0 +1,168 @@
+@model AcxiomCRM.Models.Lead
+@{
+    ViewData["Title"] = $"Lead Details — {Model.LeadName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+        <div>
+            <h3 class="fw-bold mb-0">@Model.LeadName</h3>
+            <span class="badge bg-light text-dark border font-monospace me-2">@Model.LeadCode</span>
+            <span class="badge bg-primary-subtle text-primary border">@Model.Status</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.Status != "Converted")
+        {
+            <form asp-action="Convert" asp-route-id="@Model.LeadId" method="post" class="d-inline" onsubmit="return confirm('Convert this lead into an active Customer account and sales Opportunity?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success btn-sm fw-semibold shadow-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i> Convert to Customer & Opportunity
+                </button>
+            </form>
+            <a asp-action="Edit" asp-route-id="@Model.LeadId" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit Lead
+            </a>
+        }
+        else if (Model.ConvertedCustomerId.HasValue)
+        {
+            <a asp-controller="Customer" asp-action="Details" asp-route-id="@Model.ConvertedCustomerId.Value" class="btn btn-success btn-sm">
+                <i class="bi bi-person-check-fill me-1"></i> View Converted Customer
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Lead Pipeline Progress Bar -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 small text-muted text-uppercase fw-bold">
+            <span>Lead Lifecycle Status</span>
+            <span>Current: <strong class="text-primary">@Model.Status</strong></span>
+        </div>
+        <div class="progress" style="height: 10px;">
+            @{
+                int progressPercent = Model.Status switch
+                {
+                    "New" => 25,
+                    "Contacted" => 50,
+                    "Qualified" => 75,
+                    "Converted" => 100,
+                    _ => 20
+                };
+                string progressColor = Model.Status == "Converted" ? "bg-success" : (Model.Status == "Lost" ? "bg-danger" : "bg-primary");
+            }
+            <div class="progress-bar @progressColor" role="progressbar" style="width: @progressPercent%;" aria-valuenow="@progressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="d-flex justify-content-between small text-muted mt-2">
+            <span>1. New</span>
+            <span>2. Contacted</span>
+            <span>3. Qualified</span>
+            <span>4. Converted / Closed</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left: Lead Info -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-semibold mb-0 text-warning-emphasis"><i class="bi bi-info-circle me-2"></i>Prospect Details</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Company:</span>
+                        <span class="fw-semibold">@(Model.CompanyName ?? "—")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Email:</span>
+                        <a href="mailto:@Model.Email" class="text-decoration-none fw-semibold">@Model.Email</a>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Phone:</span>
+                        <span class="fw-semibold font-monospace">@Model.Phone</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Source:</span>
+                        <span class="badge bg-light text-dark border">@Model.Source</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Priority:</span>
+                        <span class="badge bg-secondary">@Model.Priority</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Expected Value:</span>
+                        <span class="fw-bold font-monospace text-success fs-6">$@Model.ExpectedValue.ToString("N2")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Assigned Executive:</span>
+                        <span class="fw-semibold">@(Model.AssignedUser?.FullName ?? Model.AssignedUser?.UserName ?? "Unassigned")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span class="text-muted">Captured Date:</span>
+                        <span>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</span>
+                    </li>
+                </ul>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="mt-3 p-3 bg-light rounded-2 border">
+                        <div class="fw-semibold small text-muted text-uppercase mb-1">Notes:</div>
+                        <p class="small mb-0 text-secondary">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Scheduled Follow-Ups & Activities -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-semibold mb-0 text-info"><i class="bi bi-calendar-event me-2"></i>Follow-Ups (@Model.FollowUps.Count)</h6>
+                <a asp-controller="FollowUp" asp-action="Create" asp-route-leadId="@Model.LeadId" class="btn btn-outline-info btn-sm py-0">
+                    <i class="bi bi-plus"></i> Schedule
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light text-muted">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.FollowUps.Any())
+                            {
+                                foreach (var fu in Model.FollowUps)
+                                {
+                                    <tr>
+                                        <td class="font-monospace">@fu.FollowUpDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td><span class="badge bg-light text-dark border">@fu.FollowUpType</span></td>
+                                        <td class="fw-semibold">@fu.Subject</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">@fu.Status</span></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">No follow-ups scheduled for this lead.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

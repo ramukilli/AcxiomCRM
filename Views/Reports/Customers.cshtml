@@ -1,0 +1,76 @@
+@model IEnumerable<AcxiomCRM.Models.Customer>
+@{
+    ViewData["Title"] = "Customer Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Reports</a>
+        <div>
+            <h3 class="fw-bold mb-0">Customer Master Report</h3>
+            <span class="text-muted small">Total: @Model.Count() records</span>
+        </div>
+    </div>
+    <a asp-action="ExportCsv" asp-route-type="customers" asp-route-status="@ViewBag.Status" class="btn btn-outline-success fw-semibold">
+        <i class="bi bi-download me-1"></i> Export to CSV
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form asp-action="Customers" method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(ViewBag.Status == "Inactive")">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <a asp-action="Customers" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-uppercase fw-bold text-muted">
+                <tr>
+                    <th>Code</th>
+                    <th>Customer Name</th>
+                    <th>Company</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Assigned Owner</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="font-monospace">@c.CustomerCode</td>
+                        <td class="fw-semibold">@c.CustomerName</td>
+                        <td>@(c.CompanyName ?? "—")</td>
+                        <td>@c.Email</td>
+                        <td class="font-monospace">@c.Phone</td>
+                        <td><span class="badge @(c.Status == "Active" ? "bg-success-subtle text-success border" : "bg-secondary-subtle text-secondary")">@c.Status</span></td>
+                        <td>@(c.Owner?.FullName ?? c.Owner?.UserName ?? "Unassigned")</td>
+                        <td>@c.CreatedDate.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

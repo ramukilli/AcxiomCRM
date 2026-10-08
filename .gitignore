@@ -1,0 +1,32 @@
+## .NET Core / ASP.NET Core Build Artefacts
+bin/
+obj/
+out/
+
+## Visual Studio & VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Local Environment Secrets
+appsettings.Development.json
+appsettings.*.local.json
+
+## Logs and Temp files
+*.log
+*.tmp
+*.temp
+
+## SQLite database and lock files
+*.db
+*.db-shm
+*.db-wal
+
+## OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

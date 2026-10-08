@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "CRM Analytics & Reports";
+    var pipeline = ViewBag.Pipeline as List<AcxiomCRM.Services.PipelineReportItem> ?? new();
+    var conv = ViewBag.Conversion as AcxiomCRM.Services.ConversionReportItem ?? new();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-bar-graph-fill text-primary me-2"></i>Executive Reporting Center</h2>
+        <p class="text-muted small mb-0">Sales velocity, conversion funnels, pipeline distribution, and exportable business audits</p>
+    </div>
+</div>
+
+<!-- Sales Conversion Funnel & Win Rate Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-warning">
+            <span class="text-muted small fw-semibold text-uppercase">Lead Conversion Rate</span>
+            <div class="fs-3 fw-bold font-monospace text-warning-emphasis mt-1">@conv.LeadConversionRate%</div>
+            <div class="small text-muted mt-1">@conv.ConvertedLeads converted of @conv.TotalLeads leads</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-success">
+            <span class="text-muted small fw-semibold text-uppercase">Opportunity Win Rate</span>
+            <div class="fs-3 fw-bold font-monospace text-success mt-1">@conv.OpportunityWinRate%</div>
+            <div class="small text-muted mt-1">@conv.WonOpportunities won of @conv.TotalOpportunities deals</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-primary">
+            <span class="text-muted small fw-semibold text-uppercase">Total Closed Revenue</span>
+            <div class="fs-3 fw-bold font-monospace text-primary mt-1">$@conv.TotalWonRevenue.ToString("N0")</div>
+            <div class="small text-muted mt-1">From @conv.WonOpportunities won opportunities</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-info">
+            <span class="text-muted small fw-semibold text-uppercase">Active Pipeline Stages</span>
+            <div class="fs-3 fw-bold font-monospace text-info mt-1">@pipeline.Sum(p => p.OpportunityCount) Deals</div>
+            <div class="small text-muted mt-1">Across 5 pipeline stages</div>
+        </div>
+    </div>
+</div>
+
+<!-- Stage-Wise Pipeline Table -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0 text-dark"><i class="bi bi-funnel-fill text-primary me-2"></i>Stage-Wise Pipeline Performance</h6>
+        <a asp-action="ExportCsv" asp-route-type="pipeline" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Pipeline (CSV)
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase small fw-bold text-muted">
+                    <tr>
+                        <th>Pipeline Stage</th>
+                        <th class="text-center">Deals Count</th>
+                        <th class="text-end">Gross Pipeline ($)</th>
+                        <th class="text-end">Weighted Probability Value ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in pipeline)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1 fw-semibold">@item.Stage</span>
+                            </td>
+                            <td class="text-center font-monospace fw-bold">@item.OpportunityCount</td>
+                            <td class="text-end font-monospace fw-bold text-primary">$@item.TotalAmount.ToString("N2")</td>
+                            <td class="text-end font-monospace fw-bold text-success">$@item.WeightedAmount.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Available Reports Navigation Grid -->
+<h5 class="fw-bold mb-3 text-secondary">Exportable Standard Reports</h5>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-people-fill text-primary fs-3 me-2"></i>
+                <h6 class="fw-bold mb-0">Customer Master Report</h6>
+            </div>
+            <p class="small text-muted mb-3">Complete customer directory with contact information, status, and assigned sales representatives.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-action="Customers" class="btn btn-sm btn-outline-primary w-100">View Report</a>
+                <a asp-action="ExportCsv" asp-route-type="customers" class="btn btn-sm btn-outline-success" title="Download CSV"><i class="bi bi-download"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-funnel-fill text-warning fs-3 me-2"></i>
+                <h6 class="fw-bold mb-0">Lead Generation Report</h6>
+            </div>
+            <p class="small text-muted mb-3">Inbound lead capture breakdown by marketing channel, qualification status, and expected value.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-action="Leads" class="btn btn-sm btn-outline-warning text-dark w-100">View Report</a>
+                <a asp-action="ExportCsv" asp-route-type="leads" class="btn btn-sm btn-outline-success" title="Download CSV"><i class="bi bi-download"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-graph-up-arrow text-success fs-3 me-2"></i>
+                <h6 class="fw-bold mb-0">Opportunities Report</h6>
+            </div>
+            <p class="small text-muted mb-3">Deal stage tracking, probability distribution, and expected closing milestones.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-action="Opportunities" class="btn btn-sm btn-outline-success w-100">View Report</a>
+                <a asp-action="ExportCsv" asp-route-type="opportunities" class="btn btn-sm btn-outline-success" title="Download CSV"><i class="bi bi-download"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-calendar2-check-fill text-info fs-3 me-2"></i>
+                <h6 class="fw-bold mb-0">Follow-Up Activity Report</h6>
+            </div>
+            <p class="small text-muted mb-3">Planned, completed, missed, and overdue client touchpoint analytics.</p>
+            <div class="mt-auto">
+                <a asp-action="FollowUps" class="btn btn-sm btn-outline-info w-100">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-lines-fill text-danger fs-3 me-2"></i>
+                    <h6 class="fw-bold mb-0">User Activity & Audit Report</h6>
+                </div>
+                <p class="small text-muted mb-3">Staff productivity, operational actions count, authentication events, and audit metrics.</p>
+                <div class="mt-auto">
+                    <a asp-action="UserActivity" class="btn btn-sm btn-outline-danger w-100">View Report</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,52 @@
+@model IEnumerable<AcxiomCRM.Services.UserActivityReportItem>
+@{
+    ViewData["Title"] = "User Activity Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Reports</a>
+        <div>
+            <h3 class="fw-bold mb-0">Staff Activity & Operations Audit Report</h3>
+            <span class="text-muted small">Total: @Model.Count() team members</span>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-uppercase fw-bold text-muted">
+                <tr>
+                    <th>Staff Name</th>
+                    <th>Role</th>
+                    <th class="text-center">Total Actions</th>
+                    <th class="text-center">Logins</th>
+                    <th class="text-center">Created Records</th>
+                    <th class="text-center">Updated Records</th>
+                    <th class="text-center">Deleted Records</th>
+                    <th>Last Active (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">
+                            <i class="bi bi-person-circle me-1 text-primary"></i>@u.UserName
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">@u.Role</span>
+                        </td>
+                        <td class="text-center font-monospace fw-bold fs-6 text-primary">@u.TotalActions</td>
+                        <td class="text-center font-monospace">@u.LoginsCount</td>
+                        <td class="text-center font-monospace text-success fw-bold">@u.CreatesCount</td>
+                        <td class="text-center font-monospace text-warning-emphasis">@u.UpdatesCount</td>
+                        <td class="text-center font-monospace text-danger">@u.DeletesCount</td>
+                        <td class="font-monospace text-muted">@(u.LastActiveDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Never")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

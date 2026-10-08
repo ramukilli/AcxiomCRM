@@ -1,0 +1,88 @@
+@model AcxiomCRM.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register Staff — AcxiomCRM";
+    Layout = "_LayoutAuth";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8 col-xl-7">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-dark text-white p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white text-dark rounded-circle mb-3 shadow-sm" style="width: 56px; height: 56px;">
+                    <i class="bi bi-person-plus-fill fs-3 text-primary"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Create Staff Account</h3>
+                <p class="text-white-50 mb-0 small">Provision a new user profile with role permissions</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-white">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-semibold text-secondary small text-uppercase">Full Name *</label>
+                            <input asp-for="FullName" class="form-control" placeholder="e.g. Rachel Green" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold text-secondary small text-uppercase">Corporate Email *</label>
+                            <input asp-for="Email" class="form-control" placeholder="rachel@acxiom.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Department" class="form-label fw-semibold text-secondary small text-uppercase">Department</label>
+                            <input asp-for="Department" class="form-control" placeholder="e.g. Enterprise Sales" />
+                            <span asp-validation-for="Department" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Role" class="form-label fw-semibold text-secondary small text-uppercase">Primary Role *</label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="SalesExecutive">Sales Executive</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Admin">System Administrator</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-semibold text-secondary small text-uppercase">Password *</label>
+                            <input asp-for="Password" class="form-control" placeholder="Min. 8 chars, 1 upper, 1 special" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-semibold text-secondary small text-uppercase">Confirm Password *</label>
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-text mt-3 text-muted small">
+                        <i class="bi bi-info-circle me-1"></i> Passwords must be at least 8 characters and include uppercase, lowercase, numbers, and symbols.
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                            <i class="bi bi-check2-circle me-2"></i> Register Account
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <span class="text-muted small">Already have credentials? </span>
+                        <a asp-action="Login" class="text-decoration-none fw-semibold small text-primary">Return to Sign In</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

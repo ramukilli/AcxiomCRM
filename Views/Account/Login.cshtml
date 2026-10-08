@@ -1,0 +1,123 @@
+@model AcxiomCRM.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In — AcxiomCRM";
+    Layout = "_LayoutAuth";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7 col-xl-6">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle mb-3 shadow-sm" style="width: 56px; height: 56px;">
+                    <i class="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+                <h3 class="fw-bold mb-1">AcxiomCRM Enterprise</h3>
+                <p class="text-white-50 mb-0 small">Secure Role-Based Customer Relationship Management</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-white">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <div>@TempData["SuccessMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <form asp-action="Login" method="post" id="loginForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold text-secondary small text-uppercase">Corporate Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" id="emailInput" class="form-control border-start-0 ps-0" placeholder="name@acxiom.com" autocomplete="username" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold text-secondary small text-uppercase">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key"></i></span>
+                            <input asp-for="Password" id="passwordInput" class="form-control border-start-0 ps-0" placeholder="••••••••" autocomplete="current-password" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label text-muted small">Remember this browser</label>
+                        </div>
+                        <span class="text-muted small"><i class="bi bi-shield-check text-success"></i> 256-bit Encrypted</span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" id="submitLoginBtn" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Sign In to CRM
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Google OAuth Sign-In Divider -->
+                <div class="position-relative my-4 text-center">
+                    <hr class="text-secondary opacity-25" />
+                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small fw-semibold text-uppercase" style="font-size: 0.75rem;">or continue with</span>
+                </div>
+
+                <!-- Google Sign-In Button -->
+                <form asp-action="ExternalLogin" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="mb-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="provider" value="Google" />
+                    <button type="submit" id="googleSignInBtn" class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center shadow-sm rounded-3 fw-semibold bg-white text-dark">
+                        <svg class="me-2" width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        <span>Sign in with Google</span>
+                    </button>
+                </form>
+
+                <!-- Quick Test Credentials Box for Reviewers -->
+                <div class="p-3 bg-light rounded-3 border">
+                    <p class="small fw-bold text-secondary mb-2 text-uppercase">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Test Credentials (1-Click Fill)
+                    </p>
+                    <div class="btn-group btn-group-sm w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="fillCreds('admin@acxiom.com', 'Admin@12345')">
+                            <i class="bi bi-person-gear me-1"></i> Admin
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="fillCreds('manager@acxiom.com', 'Manager@12345')">
+                            <i class="bi bi-person-badge me-1"></i> Manager
+                        </button>
+                        <button type="button" class="btn btn-outline-success" onclick="fillCreds('sales@acxiom.com', 'Sales@12345')">
+                            <i class="bi bi-person-check me-1"></i> Sales Rep
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <span class="text-muted small">Need an account? </span>
+                    <a asp-action="Register" class="text-decoration-none fw-semibold small text-primary">Register New Staff</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function fillCreds(email, password) {
+            document.getElementById('emailInput').value = email;
+            document.getElementById('passwordInput').value = password;
+        }
+    </script>
+}
