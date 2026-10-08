@@ -35,6 +35,76 @@ An enterprise-grade, role-based Customer Relationship Management (CRM) platform 
 
 ---
 
+## 🏛️ Project Architecture: Frontend vs. Backend Separation
+
+AcxiomCRM implements a decoupled, multi-tiered enterprise architecture. Following the exact **Section 17.17** evaluation standards of the Acxiom specification, the **Frontend (Presentation Tier)** and **Backend (Business & Data Tier)** maintain strict separation of concerns:
+
+### Architecture Tier Mapping
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Presentation Tier)                          │
+│                                                                              │
+│   📁 Views/ (Razor Server-Side Rendered UI Templates)                        │
+│       ├── Account/        -> Login, Register, Google OAuth Connect Screen    │
+│       ├── Dashboard/      -> Executive KPI Cards & Visual Analytics View     │
+│       ├── Customer/       -> Customer 360 Portal, Master Profiles, History   │
+│       ├── Lead/           -> Lead Pipeline & 1-Click Conversion UI           │
+│       ├── Opportunity/    -> Sales Deals & Weighted Revenue Forecasts        │
+│       ├── FollowUp/       -> Touchpoint Schedules & Overdue Warning Ribbons  │
+│       ├── Activity/       -> Omnichannel Call, Email, Meeting History Feed   │
+│       ├── Reports/        -> Funnel Analytics & CSV Export Buttons           │
+│       ├── UserManagement/ -> Admin User & Role Governance Screens            │
+│       └── Shared/         -> Master Navigation Layout, Menus, Modals         │
+│                                                                              │
+│   📁 wwwroot/ (Static Client-Side Assets)                                    │
+│       ├── css/  -> Custom styles, dark-accent headers & CRM theming          │
+│       ├── js/   -> Interactive dynamic DOM, Chart.js graphs, form validators │
+│       └── lib/  -> Bootstrap 5, jQuery, Unobtrusive Validation library       │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    ▲
+                                    │ HTTP Requests / ViewModels / REST APIs
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         BACKEND (Server & Logic Tier)                        │
+│                                                                              │
+│   📁 Controllers/ (Application & Routing Orchestration)                     │
+│       ├── Web Controllers -> Account, Customer, Lead, Opportunity, FollowUp │
+│       └── Api/            -> Secure Headless REST Controllers (/api/*)       │
+│                                                                              │
+│   📁 Services/ (Business Logic, Workflows & Calculations)                    │
+│       ├── ICustomerService    -> Customer validations & de-duplication       │
+│       ├── ILeadService        -> Lead lifecycle & atomic 1-click conversion  │
+│       ├── IOpportunityService -> Pipeline stages & probability weighting     │
+│       ├── IFollowUpService    -> Overdue detection & future-date enforcement │
+│       ├── IDashboardService   -> Role-scoped KPI aggregation                 │
+│       ├── IReportService      -> Funnel analytics & RFC-4180 CSV streaming   │
+│       └── IAuditService       -> Append-only logging with JSON diff snapshots│
+│                                                                              │
+│   📁 Models/ (Domain Entities, ViewModels & DTOs)                            │
+│       ├── Core Entities -> Customer, Lead, Opportunity, FollowUp, Activity   │
+│       ├── Identity      -> ApplicationUser (PBKDF2), ApplicationRole         │
+│       ├── ViewModels/   -> Strongly-typed models for Razor views             │
+│       └── DTOs/         -> Clean contract models for REST APIs               │
+│                                                                              │
+│   📁 Data/ (Data Access & Persistence Tier)                                  │
+│       ├── ApplicationDbContext -> EF Core 8 SQLite relational configuration │
+│       └── DbInitializer        -> Automated schema creation & seed engine    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Component | Physical Path | Primary Responsibility | Technology |
+| :--- | :--- | :--- | :--- |
+| **Frontend UI** | [Views/](file:///c:/CRM_ACXIOM/Views/) | Razor templates, layout partials, and modals | Razor (.cshtml), HTML5 |
+| **Frontend Assets** | [wwwroot/](file:///c:/CRM_ACXIOM/wwwroot/) | Styling, animations, client-side validation, graphs | Bootstrap 5, Chart.js, jQuery |
+| **Backend API** | [Controllers/Api/](file:///c:/CRM_ACXIOM/Controllers/Api/) | Headless RESTful JSON endpoints | ASP.NET Core Web API, Swagger |
+| **Backend Controllers** | [Controllers/](file:///c:/CRM_ACXIOM/Controllers/) | Request routing, anti-forgery, model binding | ASP.NET Core MVC |
+| **Backend Services** | [Services/](file:///c:/CRM_ACXIOM/Services/) | Business logic, state machines, math formulas | C# Business Logic Layer |
+| **Backend Data Access** | [Data/](file:///c:/CRM_ACXIOM/Data/) | EF Core DbContext, relationships, migration | EF Core 8, SQLite |
+| **Domain Models** | [Models/](file:///c:/CRM_ACXIOM/Models/) | Entities, Identity classes, ViewModels, DTOs | C# POCO Classes |
+
+---
+
 ## 🔑 Default Seed Credentials
 
 | Role | Corporate Email | Password | Primary Scope |
